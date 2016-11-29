@@ -7,6 +7,8 @@ import subprocess
 import sys
 import threading
 import os
+import scalarm
+import time
 from socket import getfqdn, gethostname
 from Queue import Empty, Queue
 
@@ -14,6 +16,7 @@ ON_POSIX = 'posix' in sys.builtin_module_names
 MATCALC_SCRIPT_NAME = 'matcalc_input.mcs'
 BINARY_NAME = 'mcc'
 OUTPUT_POLLING_TIME_SEC = 1
+DEFAULT_TIMEOUT_MINUTES = 90
 RE_MCS_ERROR = re.compile(r'^\*\*\* error \*\*\*')
 
 # Dictorinary host -> matcher object with .match method (regexp)
@@ -59,20 +62,47 @@ def detect_host():
         else:
             host = [matcher[0] for matcher in HOST_MATCHERS.items() if matcher[1].match(fqdn)][0]
         scalarm_log('Detected host: %s' % host)
-    except KeyError:
+    except (KeyError, IndexError):
         scalarm_log('Host is not predefined in this script')
 
     return host
 
+def kill_if_timeout(start_time, timeout_seconds, matcalc_process):
+    time_elapsed = time.time() - start_time
+    if time_elapsed > timeout_seconds:
+        scalarm_log('Time limit exceeded (%d minutes %d seconds)' % (timeout_seconds/60, timeout_seconds % 60))
+        scalarm_log('Terminating mcc process due to time limit.')
+        matcalc_process.kill()
+        sys.exit(matcalc_process.returncode)
+
 def main():
+    input_config = scalarm.InputReader()
+
+    timeout_minutes = input_config['timeout_minutes']
+    if timeout_minutes is not None:
+        timeout_seconds = timeout_minutes*60
+    else:
+        timeout_seconds = DEFAULT_TIMEOUT_MINUTES*60
+
+    timeout_seconds = 5
+
+    scalarm_log('Timeout set to %d minutes %d seconds' % (timeout_seconds/60, timeout_seconds % 60))
+
+    start_time = time.time()
+
     host = detect_host()
 
     # select matcalc root dir basing on hostname
-    matcalc_root = (host is None) and None or BINARY_DIRS[host]
+    if host is None:
+        matcalc_root = None
+    else:
+        matcalc_root = BINARY_DIRS[host]
+
     if matcalc_root is None:
         scalarm_log('"mcc" binary is assumed to be in PATH')
     binary_path = (matcalc_root is None) and BINARY_NAME or os.path.join(matcalc_root, BINARY_NAME)
-    command = binary_path + ' ./' + MATCALC_SCRIPT_NAME
+    # command = binary_path + ' ./' + MATCALC_SCRIPT_NAME
+    command = 'mcc'
 
     scalarm_log('Starting command: %s' % command)
     matcalc_process = subprocess.Popen(command.split(),
@@ -94,7 +124,6 @@ def main():
     process_ended = False
 
     while True:
-        line = None
         try:
             line = output_queue.get(True, OUTPUT_POLLING_TIME_SEC)
         except Empty:
@@ -107,8 +136,7 @@ def main():
                 )
                 process_ended = True
             else:
-                # scalarm_log('Waiting for output...')
-                pass
+                kill_if_timeout(start_time, timeout_seconds, matcalc_process)
         else:
             sys.stdout.write('[mcc] %s' % line)
             error_match = RE_MCS_ERROR.match(line)
@@ -116,6 +144,8 @@ def main():
                 scalarm_log('MatCalc error detected! Terminating mcc process.')
                 matcalc_process.kill()
                 sys.exit(matcalc_process.returncode)
+            else:
+                kill_if_timeout(start_time, timeout_seconds, matcalc_process)
 
     scalarm_log('Exiting with exitcode: %d' % matcalc_process.poll())
     sys.exit(matcalc_process.poll())
