@@ -1,0 +1,118 @@
+[
+  {
+    "entities": [
+      {
+        "parameters": [
+          {
+            "__comment": "own range",
+            "label": "accumulatedStrainCold",
+            "id": "accumulatedStrainCold",
+            "type": "float",
+            "min": 0.225,
+            "max": 0.275
+          },
+          {
+            "__comment": "own range",
+            "label": "strainRateCold",
+            "id": "strainRateCold",
+            "type": "float",
+            "min": 0.09,
+            "max": 0.11
+          },
+          {
+            "label": "grainSize",
+            "id": "grainSize",
+            "type": "float",
+            "min": 5.0e-05,
+            "max": 0.0003
+          },
+          {
+            "label": "subgSize",
+            "id": "subgSize",
+            "type": "float",
+            "min": 5.0e-06,
+            "max": 0.0002
+          },
+          {
+            "label": "HomoTPre",
+            "id": "HomoTPre",
+            "type": "float",
+            "min": 250,
+            "max": 550
+          },
+          {
+            "label": "HomoTratePre",
+            "id": "HomoTratePre",
+            "type": "float",
+            "min": 0.02,
+            "max": 0.5
+          },
+          {
+            "label": "HomoTimePre",
+            "id": "HomoTimePre",
+            "type": "float",
+            "min": 1000,
+            "max": 14000
+          },
+          {
+            "label": "HomoTcratepre",
+            "id": "HomoTcratepre",
+            "type": "float",
+            "min": -0.01,
+            "max": -2
+          },
+          {
+            "__comment": "own range",
+            "label": "HomoTCR",
+            "id": "HomoTCR",
+            "type": "float",
+            "min": 378,
+            "max": 462
+          },
+          {
+            "__comment": "own range",
+            "label": "HomoTrateCR",
+            "id": "HomoTrateCR",
+            "type": "float",
+            "min": 0.09,
+            "max": 0.11
+          },
+          {
+            "__comment": "own range",
+            "label": "HomoTimeCR",
+            "id": "HomoTimeCR",
+            "type": "float",
+            "min": 900,
+            "max": 1100
+          },
+          {
+            "__comment": "own range",
+            "label": "HomoTcrateCR",
+            "id": "HomoTcrateCR",
+            "type": "float",
+            "min": -0.18,
+            "max": -0.22
+          },
+          {
+            "label": "HOMO_enabled",
+            "id": "HOMO_enabled",
+            "type": "string",
+            "allowed_values": [
+              "true",
+              "false"
+            ]
+          },
+          {
+            "label": "HOTR_enabled",
+            "id": "HOTR_enabled",
+            "type": "string",
+            "allowed_values": [
+              "true",
+              "false"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
