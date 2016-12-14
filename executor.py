@@ -84,8 +84,6 @@ def main():
     else:
         timeout_seconds = DEFAULT_TIMEOUT_MINUTES*60
 
-    timeout_seconds = 5
-
     scalarm_log('Timeout set to %d minutes %d seconds' % (timeout_seconds/60, timeout_seconds % 60))
 
     start_time = time.time()
