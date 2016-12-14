@@ -99,8 +99,7 @@ def main():
     if matcalc_root is None:
         scalarm_log('"mcc" binary is assumed to be in PATH')
     binary_path = (matcalc_root is None) and BINARY_NAME or os.path.join(matcalc_root, BINARY_NAME)
-    # command = binary_path + ' ./' + MATCALC_SCRIPT_NAME
-    command = 'mcc'
+    command = binary_path + ' ./' + MATCALC_SCRIPT_NAME
 
     scalarm_log('Starting command: %s' % command)
     matcalc_process = subprocess.Popen(command.split(),
