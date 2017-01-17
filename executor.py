@@ -73,7 +73,9 @@ def kill_if_timeout(start_time, timeout_seconds, matcalc_process):
         scalarm_log('Time limit exceeded (%d minutes %d seconds)' % (timeout_seconds/60, timeout_seconds % 60))
         scalarm_log('Terminating mcc process due to time limit.')
         matcalc_process.kill()
-        sys.exit(matcalc_process.returncode)
+        return 'time limit'
+    else:
+        return None
 
 def main():
     input_config = scalarm.InputReader()
@@ -119,6 +121,7 @@ def main():
     output_collector_thread.start()
 
     process_ended = False
+    error = None
 
     while True:
         try:
@@ -133,19 +136,22 @@ def main():
                 )
                 process_ended = True
             else:
-                kill_if_timeout(start_time, timeout_seconds, matcalc_process)
+                error = kill_if_timeout(start_time, timeout_seconds, matcalc_process)
         else:
             sys.stdout.write('[mcc] %s' % line)
             error_match = RE_MCS_ERROR.match(line)
             if error_match is not None:
                 scalarm_log('MatCalc error detected! Terminating mcc process.')
                 matcalc_process.kill()
-                sys.exit(matcalc_process.returncode)
+                error = line
             else:
-                kill_if_timeout(start_time, timeout_seconds, matcalc_process)
+                error = kill_if_timeout(start_time, timeout_seconds, matcalc_process)
 
-    scalarm_log('Exiting with exitcode: %d' % matcalc_process.poll())
-    sys.exit(matcalc_process.poll())
+    exitcode = matcalc_process.poll()
+    with open('_exitcode', 'w') as exitcode_f:
+        exitcode_f.write('{0},{1}'.format(exitcode, error))
+    scalarm_log('Exiting with exitcode: %d' % exitcode)
+    sys.exit(exitcode)
 
 
 if __name__ == '__main__':
