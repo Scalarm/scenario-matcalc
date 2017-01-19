@@ -151,7 +151,7 @@ def main():
     with open('_exitcode', 'w') as exitcode_f:
         exitcode_f.write('{0},{1}'.format(exitcode, error))
     scalarm_log('Exiting with exitcode: %d' % exitcode)
-    sys.exit(exitcode)
+    sys.exit(0)
 
 
 if __name__ == '__main__':
